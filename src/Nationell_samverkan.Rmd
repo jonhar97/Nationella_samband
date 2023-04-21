@@ -1,0 +1,99 @@
+---
+title: "Benchmark"
+author: "Jon Ahlinder"
+date: "2023-04-14"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+setwd("C:/Users/joah/OneDrive - Skogforsk/Documents/Projekt/Emelie/Nationell_samverkan/")
+require(dplyr)
+require(phyloseq)
+require(ggplot2)
+```
+
+## Read benchmark data
+
+```{r}
+trait <- read.table(file = "Beetels Test Jon metadata.txt",sep="\t",header = TRUE)
+data <- read.table(file = "Beetels Test Jon species matrix data.txt",sep="\t",header = TRUE)
+metadata <- data %>% 
+  select(c("Area_T","Treatment","Area","Type","Treatment.1","Area.1","Site"))
+abund <- data %>%
+  select(trait$Species)
+rownames(abund) <- metadata$Site
+rownames(metadata) <- metadata$Site
+# 
+# Create a phyloseq object
+abund2 <- as.matrix(t(abund))
+OTU <- otu_table(abund2,taxa_are_rows = TRUE)
+sampledata <- sample_data(metadata)
+# Kingdom	Animalia
+# Division	Arthropoda
+# Class	Insecta
+# Order	Coleoptera
+# Domain Phylum Class Order Family Genus Species
+#nr <- nrow(trait)
+#data.frame(Kingdom = rep("Animalia",nr),Division = rep("Arthropoda",nr),Class = rep("Insecta",nr),Order = rep("Coleoptera",nr),Family = trait$Family,Genus = )
+#TAX <- tax_table(as.matrix())
+
+physeq = phyloseq(OTU, sampledata)
+```
+
+
+## Plot data
+
+```{r}
+########### Alpha diversity #########
+plot_richness(physeq, x="Area.1", color="Treatment",measures = c("Observed","Chao1","Shannon"))
+########### Beta diversity #############
+GP.ord <- ordinate(physeq, "NMDS", "bray")
+p = plot_ordination(physeq, GP.ord, color="Area.1", shape="Treatment")
+p = p + geom_point(size=3, alpha=0.75)
+#p = p + scale_colour_brewer(type="qual", palette="Set1")
+p + ggtitle("NMDS on Bray-Curtis distance")
+```
+
+# Test JSDM implementations
+
+## sjSDM
+https://github.com/TheoreticalEcology/s-jSDM
+A new joint species distribution model for faster and more accurate inference of species associations from big community data: https://doi.org/10.1111/2041-210X.13687
+
+```{r}
+#install.packages("sjSDM")
+require(sjSDM)
+```
+
+## HMSC
+
+```{r}
+#install.packages("Hmsc")
+#install.packages("snow") # In the event that it is not installed with Hmsc
+#install.packages("corrplot")
+require(Hmsc)
+```
+
+## GLLVM
+
+```{r}
+require(gllvm)
+```
+
+## jSDM
+jSDM R package 
+For joint species distribution models 
+https://ecology.ghislainv.fr/jSDM 
+```{r}
+install.packages("C:/Users/joah/Downloads/jSDM_0.1.2.zip", repos = NULL, type="source")
+require(jSDM)
+```
+
+## JSDM4POD
+https://github.com/molgor/JSDM4POD/
+a Joint Species Distribution Model for Presence-Only Data. Original package in python calling PyStan. 
+```{r}
+
+```
+
